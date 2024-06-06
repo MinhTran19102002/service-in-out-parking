@@ -3,7 +3,7 @@ from PIL import Image
 import cv2
 import numpy as np
 
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw
 
 
 def select_image(file_storage):
@@ -27,7 +27,6 @@ def select_image(file_storage):
     x= None
     y = None
     res = ''
-    print('---------------------------------------')
     for contour in contours:
         perimeter =  cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.018* perimeter, True)
@@ -46,7 +45,6 @@ def select_image(file_storage):
 
     file_path = ''
     if res:
-        print('11111111111')
         ocr = PaddleOCR(use_angle_cls=True, lang='en')
         
         result = ocr.ocr(license_plate, cls=True)
@@ -116,4 +114,42 @@ def select_image(file_storage):
             license_text= txts[0]
         license_text = license_text.replace(".", "")
         return license_text,image
-        
+    
+
+
+def select_image1(img):
+    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(grayscale, (5, 5), 0)
+    edged = cv2.Canny(blurred, 10, 200)
+
+    contours, _ = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:5]
+    contour_license_plate = None
+    w= None
+    h = None
+    x= None
+    y = None
+    for contour in contours:
+        perimeter =  cv2.arcLength(contour, True)
+        approx = cv2.approxPolyDP(contour, 0.01* perimeter, True)
+        if len(approx) == 4:
+            contour_license_plate = approx
+            x,y,w,h = cv2.boundingRect(contour_license_plate)
+            break
+    if x:
+        (x, y, w, h) = cv2.boundingRect(contour_license_plate)
+        cv2.putText(img, "bien so xe", (x-10, y -10), cv2.FONT_HERSHEY_SIMPLEX, 1.75, (255, 0, 0), 2)
+
+
+    # ocr = PaddleOCR(use_angle_cls=True, lang='en')
+    # result = ocr.ocr(number_plate, cls=True)
+    # res = result[0]
+
+    # if res:
+    #     for idx in range(len(result)):
+    #         res = result[idx]
+    #         for line in res:
+    #             print(line)
+
+
+    return cv2.imencode('.jpg', img)[1].tobytes()#frame

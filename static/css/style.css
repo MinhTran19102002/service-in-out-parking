@@ -5,9 +5,10 @@
     font-family: "Rubik", sans-serif;
 }
 
-body {
+html,body {
     background-color: antiquewhite;
     height: 100%;
+    width: 100%;
     margin: 0;
     display: flex;
     align-items: center;
@@ -17,19 +18,9 @@ body {
 
 
 .container {
-    /* background-color: #ffffff;
-    width: 60%;
-    min-width: 450px;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    top: 50%;
-    left: 50%;
-    padding: 50px 30px;
-    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
-    border-radius: 7px; */
     background-color: #ffffff;
     width: 90%;
-    height: 90%;
+    height: 100%;
     /* min-width: 450px; */
     /* Giữ lại min-width nếu cần thiết */
     box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
@@ -49,6 +40,7 @@ body {
     background-color: #f8f8f8;
     padding: 20px;
     box-sizing: border-box;
+    /* width: 100%; */
 }
 
 
@@ -99,7 +91,9 @@ label {
     font-size: 16px;
 }
 
-#chosen-image {
+
+
+#chosen-image, #chosen-image-out {
     width: 300px;
     /* Đặt chiều rộng cố định */
     height: 200px;

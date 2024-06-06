@@ -1,10 +1,19 @@
 let uploadButton = document.getElementById("upload-button");
 let chosenImage = document.getElementById("chosen-image");
+let chosenImageOut = document.getElementById("chosen-image-out");
 let fileName = document.getElementById("file-name");
 let uploadForm = document.getElementById("upload-form");
 let btnInParking = document.getElementById("btnInParking");
-let licenePlate =  document.getElementById('licenePlate')
+let btnInParkingOut = document.getElementById("btnInParking-out");
+let licenePlate = document.getElementById('licenePlate');
+let licenePlateOut = document.getElementById('licenePlate-out');
+let uploadButtonOut = document.getElementById("upload-button-out");
+
+// let host = "http://localhost:8010"
+let host = "https://park.workon.space" 
+
 uploadButton.onchange = () => {
+    // console.log('--------------------------')
     let reader = new FileReader();
     reader.readAsDataURL(uploadButton.files[0]);
     reader.onload = () => {
@@ -31,29 +40,114 @@ uploadButton.onchange = () => {
     }
 }
 
+uploadButtonOut.onchange = () => {
+    console.log('--------------------------')
+    let reader = new FileReader();
+    reader.readAsDataURL(uploadButtonOut.files[0]);
+    reader.onload = () => {
+        chosenImageOut.setAttribute("src", reader.result);
+        // uploadForm.submit();
+        const formData = new FormData();
+        formData.append('file', uploadButtonOut.files[0]);
+        // console.log(uploadButtonOut.files[0]);
+        fetch('/uploads', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result) {
+                    document.getElementById('licenePlate-out').value = data.result;
+                } else {
+                    document.getElementById('licenePlate-out').value = '';
+                }
+            })
+            .catch(error => {
+                document.getElementById('licenePlate-out').value = '';
+            });
+    }
+}
 
 async function handleButtonInParking() {
-    const url = 'http://localhost:8010/api/parkingTurn/createPakingTurnWithoutZoneAndPosition';
+    const url = host + '/api/parkingTurn/createPakingTurnWithoutZoneAndPosition';
 
     try {
-        // Gửi yêu cầu fetch
-        const formData = new FormData();
-        formData.append('image', uploadButton.files[0]);
-        console.log(uploadButton.files[0]);
-        formData.append('licenePlate',licenePlate.value);
-        const response = await fetch(url, {
-            method: 'POST', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
-            body: formData
-        });
+        if (licenePlate.value == '') {
 
-        // Kiểm tra xem yêu cầu có thành công không
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        else {
+
+
+            // Gửi yêu cầu fetch
+            const formData = new FormData();
+            formData.append('image', uploadButton.files[0]);
+            console.log(uploadButton.files[0]);
+            formData.append('licenePlate', licenePlate.value);
+            const response = await fetch(url, {
+                method: 'POST', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
+                body: formData
+            });
+
+            // Kiểm tra xem yêu cầu có thành công không
+            if (!response.ok) {
+                const data = await response.json();
+                Swal.fire(data.message);
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            // Chuyển đổi dữ liệu phản hồi thành JSON
+            const data = await response.json();
+            console.log(data); // Xử lý dữ liệu JSON tại đây (ví dụ: hiển thị trên giao diện)
+            Swal.fire({
+                title: "Xe vào bãi!",
+                html: "Xe " + licenePlate.value + " vào bãi<br>Vị trí đỗ:" + data.position,
+                icon: "success"
+            });
         }
 
-        // Chuyển đổi dữ liệu phản hồi thành JSON
-        const data = await response.json();
-        console.log(data); // Xử lý dữ liệu JSON tại đây (ví dụ: hiển thị trên giao diện)
+    } catch (error) {
+        console.error('Fetch error: ', error);
+    }
+}
+
+async function handleButtonInParkingOut() {
+    const url = host + '/api/parkingTurn/outPaking';
+
+    try {
+        // console.log(licenePlateOut.value)
+        if (licenePlateOut.value == '') {
+
+        }
+        else {
+
+            let licenePlate_value = licenePlateOut.value;
+            console.log(licenePlate_value)
+            // Gửi yêu cầu fetch
+            const response = await fetch(url, {
+                method: 'POST', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "licenePlate": licenePlate_value })
+            });
+
+            // Kiểm tra xem yêu cầu có thành công không
+            if (!response.ok) {
+                const data = await response.json();
+                Swal.fire(data.message);
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+
+            // Chuyển đổi dữ liệu phản hồi thành JSON
+            const data = await response.json();
+            console.log(data); // Xử lý dữ liệu JSON tại đây (ví dụ: hiển thị trên giao diện)
+            Swal.fire({
+                html: "Xe " + licenePlate_value + " ra khỏi bãi<br>Chi phí: " + data.fee + "<br>Vị trí đỗ:" + data.position,
+                title: "Xe vào bãi!",
+                // text: "Xe " + licenePlate_value + " ra khỏi bãi<br>Chi phí: " + data.fee + "<br>Vị trí đỗ:" + data.position,
+                icon: "success"
+            });
+        }
 
     } catch (error) {
         console.error('Fetch error: ', error);
@@ -62,3 +156,6 @@ async function handleButtonInParking() {
 
 // Đợi DOM được tải đầy đủ rồi thêm sự kiện lắng nghe vào nút
 btnInParking.addEventListener('click', handleButtonInParking);
+
+
+btnInParkingOut.addEventListener('click', handleButtonInParkingOut);

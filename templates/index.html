@@ -11,10 +11,12 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="../static/css/style.css">
-    <title>My Flask App</title>
+    <title>{{ title }}</title>
 </head>
 
 <body>
@@ -47,19 +49,30 @@
         </div>
         <div class="row-6">
             <h1>Xuất xe khỏi bãi</h1>
-            <form action="/" method="post" enctype="multipart/form-data" id="upload-form">
+            <form enctype="multipart/form-data" id="upload-form">
+                
                 <figure class="image-container">
-                    <img id="chosen-image" src="data:image/png;base64,{{fileImage}}">
+                    <img id="chosen-image-out" src="{{ url_for('image_feed') }}">
+                    <!-- <img id="chosen-image-out" src="data:image/png;base64,{{fileImage}}"> -->
                     <figcaption id="file-name">
                     </figcaption>
-                    <p>{{result}}</p>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">Biển số xe</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input"
+                            aria-describedby="inputGroup-sizing-default" readonly id="licenePlate-out"
+                            placeholder="Chưa xác định được biển số xe" required>
+                    </div>
+                    <div id="result"></div>
                 </figure>
-                <input type="file" id="upload-button" accept="image/*" name="file">
-                <label for="upload-button">
+                <input type="file" id="upload-button-out" accept="image/*" name="file">
+                <label for="upload-button-out" class="upload-label">
                     <i class="fas fa-upload"></i>&nbsp;
-                    chosen A Image
+                    Chọn hình ảnh
                 </label>
-                <input type="submit" value="Upload">
+                <button type="button" class="btn btn-outline-primary" id="btnInParking-out">
+                    <i class="fas fa-arrow-right"></i>
+                    Xuất xe
+                </button>
             </form>
         </div>
     </div>
