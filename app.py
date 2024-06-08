@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
-from unit.license_plate_recognition import select_image, select_image1
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, g
+from unit.license_plate_recognition import select_image1
 import os
 import numpy as np
 from PIL import Image
@@ -14,51 +14,42 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-webcam = Webcam()
 
 @app.route('/')
 def home():
     return render_template('index.html', title = 'Parking Management')
-
-@app.route('/uploads', methods=['POST'])
-def image():
-    if 'file' not in request.files:
-        return redirect(request.url)
-    file = request.files['file']
-    if file.filename == '':
-        return redirect(request.url)
-    if file:
-        
-        # Gọi hàm xử lý ảnh
-        result, fileImage = select_image(file)
-        
-        img = Image.fromarray(fileImage.astype('uint8'))
-
-# Tạo một đối tượng StringIO để lưu trữ dữ liệu của hình ảnh dưới dạng chuỗi
-        img_io = io.BytesIO()
-
-# Lưu hình ảnh vào đối tượng StringIO với định dạng PNG
-        img.save(img_io, format='PNG')
-
-# Mã hóa dữ liệu của hình ảnh thành chuỗi Base64
-        img_base64 = base64.b64encode(img_io.getvalue()).decode()
-        
-        # return render_template('index.html', result = result,fileImage =img_base64 )
-        return jsonify({'message': 'File successfully uploaded', 'result': result}), 200
-    return redirect(url_for('home'))
-
-
 def read_from_webcam():
+    webcam = Webcam()
     while True:
         # Đọc ảnh từ class Webcam
         image = next(webcam.get_frame())
-        image = select_image1(image)
+        image, licenseS = select_image1(image)
+        global global_licenseS
+        global image_license
+        global_licenseS = licenseS
+        image_license = image
+        # g.global_var = licenseS
         yield b'Content-Type: image/jpeg\r\n\r\n' + image + b'\r\n--frame\r\n'
-
-
+        
 @app.route("/image_feed")
 def image_feed():
     return Response( read_from_webcam(), mimetype="multipart/x-mixed-replace; boundary=frame" )
 
+@app.route('/imagecap', methods=['GET'])
+def imagecap():
+    global image_license
+    # return jsonify({'message': 'File successfully uploaded', 'result': global_licenseS}), 200
+    return Response(response=image_license, status=200, mimetype="image/jpeg")
+
+@app.route('/licenseS', methods=['GET'])
+def licenseSFunc():
+    global global_licenseS
+    return jsonify({'message': 'File successfully uploaded', 'result': global_licenseS}), 200
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port = 5000)
+    global global_licenseS
+    global image_license
+    global_licenseS = []
+    image_license = None
+

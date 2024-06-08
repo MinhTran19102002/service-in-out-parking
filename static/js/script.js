@@ -10,7 +10,7 @@ let licenePlateOut = document.getElementById('licenePlate-out');
 let uploadButtonOut = document.getElementById("upload-button-out");
 
 // let host = "http://localhost:8010"
-let host = "https://park.workon.space" 
+let host = "https://park.workon.space"
 
 uploadButton.onchange = () => {
     // console.log('--------------------------')
@@ -111,43 +111,32 @@ async function handleButtonInParking() {
 }
 
 async function handleButtonInParkingOut() {
-    const url = host + '/api/parkingTurn/outPaking';
-
+    const url = 'http://127.0.0.1:5000' + '/licenseS';
+    const urlImage = 'http://127.0.0.1:5000' + '/imagecap';
+    chosenImage.src = urlImage;
     try {
-        // console.log(licenePlateOut.value)
-        if (licenePlateOut.value == '') {
-
-        }
-        else {
-
-            let licenePlate_value = licenePlateOut.value;
-            console.log(licenePlate_value)
-            // Gửi yêu cầu fetch
-            const response = await fetch(url, {
-                method: 'POST', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ "licenePlate": licenePlate_value })
-            });
-
-            // Kiểm tra xem yêu cầu có thành công không
-            if (!response.ok) {
-                const data = await response.json();
-                Swal.fire(data.message);
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-
-            // Chuyển đổi dữ liệu phản hồi thành JSON
+        const response = await fetch(url, {
+            method: 'GET', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const response1  = await fetch(urlImage, {
+            method: 'GET', // Hoặc 'POST', 'PUT', v.v. tùy thuộc vào yêu cầu của bạn
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
             const data = await response.json();
-            console.log(data); // Xử lý dữ liệu JSON tại đây (ví dụ: hiển thị trên giao diện)
-            Swal.fire({
-                html: "Xe " + licenePlate_value + " ra khỏi bãi<br>Chi phí: " + data.fee + "<br>Vị trí đỗ:" + data.position,
-                title: "Xe vào bãi!",
-                // text: "Xe " + licenePlate_value + " ra khỏi bãi<br>Chi phí: " + data.fee + "<br>Vị trí đỗ:" + data.position,
-                icon: "success"
-            });
+            Swal.fire(data.message);
+            throw new Error('Network response was not ok ' + response.statusText);
         }
+
+        // Chuyển đổi dữ liệu phản hồi thành JSON
+        const data = await response.json();
+        console.log(data.result); // Xử lý dữ liệu JSON tại đây (ví dụ: hiển thị trên giao diện)
+
 
     } catch (error) {
         console.error('Fetch error: ', error);
